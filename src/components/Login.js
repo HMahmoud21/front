@@ -6,8 +6,6 @@ import FacebookLogin from 'react-facebook-login';
 import GoogleLogin from 'react-google-login';
 import axios from 'axios';
 
-
-
 const handleFacebookResponse = (response) => {
   console.log(response);
   // handle Facebook login response
@@ -22,14 +20,24 @@ const Login = () => {
   const [password, setPassword] = useState("");
    const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post("http://localhost:3000/", {
-        password,
-        email,
-      });
-      console.log(response.data);
-    } catch (error) {
-      console.error(error);
+    
+    try{
+      const response = await fetch("http://localhost:5000/login",{
+        method:"POST",
+        headers:{
+          "content-type":"application/json"
+        },
+        body: JSON.stringify({
+          email,
+          password
+        })
+      })
+      const data = await response.json();
+
+      console.log(data);
+
+    }catch(err){
+      console.error(err);
     }
   };
 
@@ -81,7 +89,7 @@ const Login = () => {
                       className="input"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="******"
+                      placeholder="**"
                     />
                   </div>
                 </div>

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { LoginUser, reset } from "../features/authSlice";
 import FacebookLogin from 'react-facebook-login';
 import GoogleLogin from 'react-google-login';
-
+import { Alert , Snackbar } from "@mui/material";
 
 const handleFacebookResponse = (response) => {
   console.log(response);
@@ -18,16 +18,46 @@ const Registrer = () => {
     const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [err , setErr] = useState("");
+  const [success , setSuccess] = useState("");
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const { user, isError, isSuccess, isLoading, message } = useSelector(
     (state) => state.auth
   );
 
-  
-  const Auth = (e) => {
+  const Auth = async (e) => {
     e.preventDefault();
-    dispatch(LoginUser({ email, password }));
+
+    const response = await fetch("http://localhost:5000/register",{
+      method:"POST",
+      headers:{
+        "content-type":"application/json"
+      },
+      body:JSON.stringify({
+        name,
+        email,
+        password
+      })
+    })
+    const data = await response.json();
+
+    console.log(data);
+
+    switch(data.msg){
+      case "user created successfully":
+        setSuccess("user created successfully");
+        break;
+      case "user already exists":
+        setErr("user with the given email already exists");
+        break;
+      default:
+        // setErr(data.msg);
+        // navigate("/dashboard");
+    }
+
+    // dispatch(LoginUser({ email, password }));
   };
 
   return (
@@ -46,7 +76,7 @@ const Registrer = () => {
                       type="text"
                       className="input"
                       value={name}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => setName(e.target.value)}
                       placeholder="Saisir votre nom "
                     />
                   </div>
@@ -80,7 +110,7 @@ const Registrer = () => {
                     type="submit"
                     className="button is-success is-fullwidth"
                   >
-                    {isLoading ? "Loading..." : "Login"}
+                    {isLoading ? "Loading..." : "Register"}
                   </button>
                 </div>
                 <FacebookLogin
@@ -109,6 +139,21 @@ const Registrer = () => {
           </div>
         </div>
       </div>
+
+      <Snackbar autoHideDuration={4000} open={ err === "" ? false : true } onClose={()=>{ setErr("") }}  >
+        <Alert variant="filled" severity="error" onClose={()=>{ setErr("") }} >
+          {
+            err
+          }
+        </Alert>
+      </Snackbar>
+      <Snackbar autoHideDuration={4000} open={ success === "" ? false : true } onClose={()=>{ setSuccess("") }}  >
+        <Alert variant="filled" severity="success" onClose={()=>{ setSuccess("") }} >
+          {
+            success
+          }
+        </Alert>
+      </Snackbar>
     </section>
   );
 };
